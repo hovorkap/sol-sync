@@ -94,15 +94,16 @@ def main():
     sol_username = options["skolaonline_username"]
     sol_password = options["skolaonline_password"]
     sync_interval = int(options.get("sync_interval", 30))
+    default_list_name = options.get("default_list_name") or "Homework"
     raw_pupils = options.get("pupils") or []
 
-    # Build pupil config list
+    # Build pupil config list — list_name falls back to default_list_name if not set per-pupil
     pupils_cfg = []
     for entry in raw_pupils:
         pupils_cfg.append({
             "sol_name": entry["sol_name"],
             "strategy": entry.get("strategy") or STRATEGY_SINGLE,
-            "list_name": entry.get("list_name") or "Homework",
+            "list_name": entry.get("list_name") or default_list_name,
             "name_prefix": entry.get("name_prefix") or "",
             "include_past": bool(entry.get("include_past", False)),
         })
