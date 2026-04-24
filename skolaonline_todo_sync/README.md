@@ -1,4 +1,4 @@
-# SkolaOnline Sync
+# SkolaOnline CalDAV Sync
 
 Scrapes homework assignments from [SkolaOnline.cz](https://www.skolaonline.cz) (Czech school parent portal) and syncs them as reminders to a **CalDAV calendar** — iCloud Reminders or any standard CalDAV server (Nextcloud, Radicale, Baikal, etc.).
 
@@ -16,7 +16,7 @@ Scrapes homework assignments from [SkolaOnline.cz](https://www.skolaonline.cz) (
 
 1. In Home Assistant go to **Settings → Add-ons → Add-on Store**
 2. Click ⋮ → **Repositories** and add `https://github.com/hovorkap/sol-sync`
-3. Find and install **SkolaOnline Sync**
+3. Find and install **SkolaOnline CalDAV Sync**
 4. Configure and start the add-on
 
 ## Configuration
@@ -58,7 +58,7 @@ Select `icloud` (default) or `caldav`.
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `sol_name` | Pupil name as shown in SkolaOnline dropdown (surname first, e.g. `Hovorka Maxim`) | _(required)_ |
+| `sol_name` | Pupil name as shown in SkolaOnline dropdown (surname first, e.g. `Novak Jan`) | _(required)_ |
 | `strategy` | `single` or `parse_du` | `single` |
 | `list_name` | Reminder list name for this pupil; falls back to `default_list_name` if empty | _(empty)_ |
 | `name_prefix` | If set, prepends `[prefix] ` to every reminder title | _(empty)_ |
@@ -75,7 +75,7 @@ icloud_app_password: xxxx-xxxx-xxxx-xxxx
 sync_interval: 60
 default_list_name: Homework
 pupils:
-  - sol_name: "Hovorka Maxim"
+  - sol_name: "Novak Jan"
     strategy: parse_du
     list_name: ""
     name_prefix: ""

@@ -1,3 +1,8 @@
+## 0.23.0
+
+### Changed
+- Add-on renamed to **SkolaOnline CalDAV Sync** to better reflect that it supports any CalDAV server, not just iCloud
+
 ## 0.22.1
 
 ### Fixed

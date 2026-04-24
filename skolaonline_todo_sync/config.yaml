@@ -1,6 +1,6 @@
-name: "SkolaOnline Sync"
+name: "SkolaOnline CalDAV Sync"
 description: "Synchronizuje domácí úkoly ze SkolaOnline.cz do CalDAV kalendáře (iCloud nebo jiný server)"
-version: "0.22.1"
+version: "0.23.0"
 slug: "skolaonline_todo_sync"
 url: "https://github.com/hovorkap/sol-sync"
 init: false

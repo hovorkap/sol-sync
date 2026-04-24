@@ -1,4 +1,4 @@
-# SkolaOnline Sync
+# SkolaOnline CalDAV Sync
 
 Doplněk synchronizuje domácí úkoly ze [SkolaOnline.cz](https://www.skolaonline.cz) do CalDAV kalendáře (iCloud Připomínky nebo jiný CalDAV server).
 
