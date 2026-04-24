@@ -1,0 +1,34 @@
+configuration:
+  skolaonline_username:
+    name: "SkolaOnline Username"
+    description: "Your SkolaOnline login username (e-mail or account name)"
+  skolaonline_password:
+    name: "SkolaOnline Password"
+    description: "Your SkolaOnline login password"
+  cal_backend:
+    name: "Calendar Backend"
+    description: "Select iCloud Reminders or a generic CalDAV server (Nextcloud, Radicale, etc.)"
+  icloud_apple_id:
+    name: "Apple ID"
+    description: "Your Apple ID e-mail address (only used with iCloud backend)"
+  icloud_app_password:
+    name: "iCloud App-Specific Password"
+    description: "App-specific password from appleid.apple.com — NOT your regular Apple ID password"
+  caldav_url:
+    name: "CalDAV Server URL"
+    description: "Root URL of your CalDAV server, e.g. https://nextcloud.example.com/remote.php/dav"
+  caldav_username:
+    name: "CalDAV Username"
+    description: "Username for your CalDAV server"
+  caldav_password:
+    name: "CalDAV Password"
+    description: "Password for your CalDAV server"
+  sync_interval:
+    name: "Sync Interval (minutes)"
+    description: "How often to check SkolaOnline for new homework"
+  default_list_name:
+    name: "Default List Name"
+    description: "Name of the reminder list / CalDAV calendar to sync into (can be overridden per pupil)"
+  pupils:
+    name: "Pupils"
+    description: "One entry per pupil to sync"

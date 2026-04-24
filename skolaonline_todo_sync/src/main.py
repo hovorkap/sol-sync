@@ -21,6 +21,7 @@ import threading
 
 from skolaonline import SkolaOnlineClient
 from icloud_reminders import ICloudRemindersClient
+from generic_caldav import GenericCalDAVClient
 from sync import sync_homework, STRATEGY_SINGLE
 
 logging.basicConfig(
@@ -115,12 +116,36 @@ def main():
 
     skola = SkolaOnlineClient(username=sol_username, password=sol_password)
 
-    backend = ICloudRemindersClient(
-        apple_id=options["icloud_apple_id"],
-        app_password=options["icloud_app_password"],
-        uid_map_path="/data/icloud_uid_map.json",
-    )
-    log.info("Authenticating to iCloud CalDAV...")
+    cal_backend = options.get("cal_backend") or "icloud"
+    if cal_backend == "icloud":
+        apple_id = options.get("icloud_apple_id") or ""
+        app_password = options.get("icloud_app_password") or ""
+        if not apple_id or not app_password:
+            log.error("iCloud backend requires icloud_apple_id and icloud_app_password.")
+            sys.exit(1)
+        backend = ICloudRemindersClient(
+            apple_id=apple_id,
+            app_password=app_password,
+            uid_map_path="/data/icloud_uid_map.json",
+        )
+        log.info("Authenticating to iCloud CalDAV...")
+    elif cal_backend == "caldav":
+        caldav_url = options.get("caldav_url") or ""
+        caldav_username = options.get("caldav_username") or ""
+        caldav_password = options.get("caldav_password") or ""
+        if not caldav_url or not caldav_username:
+            log.error("CalDAV backend requires caldav_url and caldav_username.")
+            sys.exit(1)
+        backend = GenericCalDAVClient(
+            url=caldav_url,
+            username=caldav_username,
+            password=caldav_password,
+        )
+        log.info("Authenticating to CalDAV server %s...", caldav_url)
+    else:
+        log.error("Unknown cal_backend %r. Must be 'icloud' or 'caldav'.", cal_backend)
+        sys.exit(1)
+
     backend.authenticate()
 
     # Resolve dropdown values for all configured pupils once at startup

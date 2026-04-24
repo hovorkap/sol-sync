@@ -1,6 +1,6 @@
-name: "SkolaOnline ToDo Sync"
-description: "Synchronizes homework assignments from SkolaOnline.cz to iCloud Reminders"
-version: "0.18.0"
+name: "SkolaOnline Sync"
+description: "Synchronizuje domácí úkoly ze SkolaOnline.cz do CalDAV kalendáře (iCloud nebo jiný server)"
+version: "0.19.0"
 slug: "skolaonline_todo_sync"
 url: "https://github.com/hovorkap/sol-sync"
 init: false
@@ -12,8 +12,12 @@ arch:
 options:
   skolaonline_username: ""
   skolaonline_password: ""
+  cal_backend: "icloud"
   icloud_apple_id: ""
   icloud_app_password: ""
+  caldav_url: ""
+  caldav_username: ""
+  caldav_password: ""
   sync_interval: 30
   default_list_name: "Homework"
   pupils:
@@ -25,8 +29,12 @@ options:
 schema:
   skolaonline_username: str
   skolaonline_password: str
-  icloud_apple_id: str
-  icloud_app_password: str
+  cal_backend: list(icloud|caldav)
+  icloud_apple_id: "str?"
+  icloud_app_password: "str?"
+  caldav_url: "url?"
+  caldav_username: "str?"
+  caldav_password: "str?"
   sync_interval: int
   default_list_name: str
   pupils:

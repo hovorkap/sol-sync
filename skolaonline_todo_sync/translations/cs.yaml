@@ -1,0 +1,34 @@
+configuration:
+  skolaonline_username:
+    name: "Uživatelské jméno SkolaOnline"
+    description: "Přihlašovací jméno do SkolaOnline (e-mail nebo název účtu)"
+  skolaonline_password:
+    name: "Heslo SkolaOnline"
+    description: "Přihlašovací heslo do SkolaOnline"
+  cal_backend:
+    name: "Typ kalendáře"
+    description: "Vyberte iCloud Připomínky nebo obecný CalDAV server (Nextcloud, Radicale apod.)"
+  icloud_apple_id:
+    name: "Apple ID"
+    description: "Vaše Apple ID (e-mailová adresa) – pouze pro iCloud backend"
+  icloud_app_password:
+    name: "Heslo pro aplikaci iCloud"
+    description: "Heslo pro konkrétní aplikaci z appleid.apple.com – NENÍ to vaše běžné heslo Apple ID"
+  caldav_url:
+    name: "URL CalDAV serveru"
+    description: "Kořenová URL vašeho CalDAV serveru, např. https://nextcloud.example.com/remote.php/dav"
+  caldav_username:
+    name: "Uživatelské jméno CalDAV"
+    description: "Uživatelské jméno pro přihlášení k CalDAV serveru"
+  caldav_password:
+    name: "Heslo CalDAV"
+    description: "Heslo pro přihlášení k CalDAV serveru"
+  sync_interval:
+    name: "Interval synchronizace (minuty)"
+    description: "Jak často kontrolovat SkolaOnline pro nové úkoly"
+  default_list_name:
+    name: "Výchozí název seznamu"
+    description: "Název seznamu připomínek / CalDAV kalendáře (lze přepsat pro každého žáka)"
+  pupils:
+    name: "Žáci"
+    description: "Jeden záznam pro každého žáka, jehož úkoly se mají synchronizovat"
