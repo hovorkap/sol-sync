@@ -43,7 +43,7 @@ Doplněk synchronizuje domácí úkoly ze [SkolaOnline.cz](https://www.skolaonli
 |---|---|---|
 | `sync_interval` | `30` | Interval synchronizace v minutách |
 | `default_list_name` | `Homework` | Výchozí název seznamu/kalendáře |
-| `reminder_time` | _(prázdné)_ | Čas notifikace v den odevzdání, např. `18:00`. Prázdné = pouze datum, bez notifikace |
+| `reminder_time` | _(prázdné)_ | Čas notifikace večer **před** termínem odevzdání, např. `18:00`. Prázdné = pouze datum, bez notifikace |
 
 ### Žáci (`pupils`)
 
