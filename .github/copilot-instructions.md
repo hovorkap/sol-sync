@@ -12,7 +12,7 @@ This is a **GitHub add-on repository** for Home Assistant. Users add the repo UR
 repository.yaml                    # HA add-on repository metadata
 README.md
 CHANGELOG.md                       # root-level (not used by HA)
-skolaonline_todo_sync/
+skolaonline_caldav_sync/
   config.yaml                      # HA addon manifest (name, slug, options, schema, arch)
   Dockerfile                       # FROM ghcr.io/home-assistant/base:latest, apk python3
   run.sh                           # #!/bin/sh entry point — exec python3 /app/main.py
@@ -72,7 +72,7 @@ pupils:
 ## Key conventions
 
 ### Changelog (IMPORTANT)
-- **Always update `skolaonline_todo_sync/CHANGELOG.md`** when making user-facing changes.
+- **Always update `skolaonline_caldav_sync/CHANGELOG.md`** when making user-facing changes.
 - Add a new `## X.Y.Z` section at the top with `### Added`, `### Changed`, or `### Fixed` subsections.
 - The changelog version must match the version in `config.yaml`.
 - Do not add changelog entries for pure documentation or internal refactoring changes unless they affect users.
@@ -83,7 +83,7 @@ pupils:
 - Log to stdout/stderr only. Use Python `logging` — never write to log files.
 - `run.sh` uses `#!/bin/sh` (not `with-contenv bashio`) and simply does `exec python3 /app/main.py`.
 - When adding new user-facing config options, update **all four** of: `options:` in `config.yaml`, `schema:` in `config.yaml`, `translations/en.yaml`, `translations/cs.yaml`.
-- The HA addon `CHANGELOG.md` and `DOCS.md` are in the addon folder (`skolaonline_todo_sync/`), not the repo root.
+- The HA addon `CHANGELOG.md` and `DOCS.md` are in the addon folder (`skolaonline_caldav_sync/`), not the repo root.
 
 ### Dockerfile constraints
 - Base image: `FROM ghcr.io/home-assistant/base:latest` — do NOT use `python:*` or `alpine:*`.

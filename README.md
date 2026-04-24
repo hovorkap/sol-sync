@@ -15,4 +15,4 @@ This repository hosts the **SkolaOnline CalDAV Sync** Home Assistant add-on.
 
 Scrapes homework assignments from [SkolaOnline.cz](https://www.skolaonline.cz) (Czech school parent portal) and syncs them as reminders to a **CalDAV calendar** — iCloud Reminders or any standard CalDAV server (Nextcloud, Radicale, Baikal, etc.).
 
-See the [add-on documentation](skolaonline_todo_sync/README.md) for full configuration details.
+See the [add-on documentation](skolaonline_caldav_sync/README.md) for full configuration details.
