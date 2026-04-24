@@ -1,7 +1,7 @@
 """
 SkolaOnline ToDo Sync - Main entry point.
 
-Reads configuration via bashio (Home Assistant addon options),
+Reads configuration from /data/options.json (Home Assistant addon options),
 authenticates to SkolaOnline and iCloud Reminders via CalDAV,
 then runs a per-pupil sync loop on the configured interval.
 
@@ -12,12 +12,11 @@ Config structure:
       list_name: "Homework"          # reminder list name (CalDAV calendar)
       name_prefix: ""                # if non-empty, prefix all titles with "[name_prefix] "
 """
+import json
 import logging
 import signal
 import sys
 import threading
-
-import bashio
 
 from skolaonline import SkolaOnlineClient
 from icloud_reminders import ICloudRemindersClient
@@ -28,6 +27,17 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
 )
 log = logging.getLogger(__name__)
+
+_OPTIONS_PATH = "/data/options.json"
+
+
+def _load_options() -> dict:
+    with open(_OPTIONS_PATH) as f:
+        return json.load(f)
+
+
+def config(key, options: dict):
+    return options.get(key)
 
 _shutdown = threading.Event()
 
@@ -79,10 +89,12 @@ def _resolve_pupils(skola: SkolaOnlineClient, configured_pupils: list[dict]) -> 
 
 
 def main():
-    sol_username = bashio.config("skolaonline_username")
-    sol_password = bashio.config("skolaonline_password")
-    sync_interval = int(bashio.config("sync_interval"))
-    raw_pupils = bashio.config("pupils") or []
+    options = _load_options()
+
+    sol_username = options["skolaonline_username"]
+    sol_password = options["skolaonline_password"]
+    sync_interval = int(options.get("sync_interval", 30))
+    raw_pupils = options.get("pupils") or []
 
     # Build pupil config list
     pupils_cfg = []
@@ -92,7 +104,7 @@ def main():
             "strategy": entry.get("strategy") or STRATEGY_SINGLE,
             "list_name": entry.get("list_name") or "Homework",
             "name_prefix": entry.get("name_prefix") or "",
-            "include_past": bool(entry.get("include_past", True)),
+            "include_past": bool(entry.get("include_past", False)),
         })
 
     if not pupils_cfg:
@@ -102,8 +114,8 @@ def main():
     skola = SkolaOnlineClient(username=sol_username, password=sol_password)
 
     backend = ICloudRemindersClient(
-        apple_id=bashio.config("icloud_apple_id"),
-        app_password=bashio.config("icloud_app_password"),
+        apple_id=options["icloud_apple_id"],
+        app_password=options["icloud_app_password"],
         uid_map_path="/data/icloud_uid_map.json",
     )
     log.info("Authenticating to iCloud CalDAV...")
