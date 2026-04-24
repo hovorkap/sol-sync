@@ -19,16 +19,10 @@ import signal
 import sys
 import threading
 
-# --- DIAGNOSTIC BLOCK (remove after confirmed working) ---
-print(f"[DIAG] __file__={__file__}", flush=True)
-print(f"[DIAG] cwd={os.getcwd()}", flush=True)
-_app_dir = os.path.dirname(os.path.abspath(__file__))
-print(f"[DIAG] app_dir={_app_dir}", flush=True)
-print(f"[DIAG] app_dir contents={sorted(os.listdir(_app_dir)) if os.path.isdir(_app_dir) else 'NOT A DIR'}", flush=True)
-sys.path.insert(0, _app_dir)
-sys.path.insert(0, '/app')  # belt-and-suspenders hardcoded fallback
-print(f"[DIAG] sys.path={sys.path[:5]}", flush=True)
-# --- END DIAGNOSTIC ---
+# Ensure the directory containing this file is on sys.path so sibling
+# modules (skolaonline, icloud_reminders, sync) are importable regardless
+# of working directory or PYTHONPATH configuration.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from skolaonline import SkolaOnlineClient
 from icloud_reminders import ICloudRemindersClient
