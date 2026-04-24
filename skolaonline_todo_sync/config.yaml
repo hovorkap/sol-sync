@@ -29,7 +29,7 @@ schema:
   sync_interval: int
   pupils:
     - sol_name: str
-      strategy: "single|parse_du"
+      strategy: list(single|parse_du)
       list_name: str
-      name_prefix: str
+      name_prefix: "str?"
       include_past: bool
