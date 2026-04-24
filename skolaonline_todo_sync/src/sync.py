@@ -55,12 +55,13 @@ class ReminderItem:
 
 def sync_homework(
     skola: SkolaOnlineClient,
-    backend,   # ICloudRemindersClient | MicrosoftToDoClient
+    backend,   # ICloudRemindersClient | GenericCalDAVClient
     list_name: str,
     strategy: str = STRATEGY_SINGLE,
     pupil_value: Optional[str] = None,
     name_prefix: str = "",
     include_past: bool = True,
+    reminder_time: Optional[str] = None,
 ) -> None:
     """
     Fetch homework from SkolaOnline and create missing reminders via backend.
@@ -71,12 +72,13 @@ def sync_homework(
                   Use when two pupils share the same reminder list.
     include_past: if False, skip assignments whose due_date is before today.
                   Assignments with no due_date are always included.
+    reminder_time: "HH:MM" string (e.g. "18:00"). When set, DUE is written as
+                  a floating datetime and a VALARM fires at that time.
 
     backend must expose:
       - get_or_create_list(name) → list_handle
-      - get_task_uids(list_handle) → set[str]        (iCloud path)
-          OR get_tasks(list_handle) → list[dict]      (MS Todo path)
-      - create_task(list_handle, uid, title, description, due_date)
+      - get_task_uids(list_handle) → set[str]
+      - create_task(list_handle, uid, title, description, due_date, reminder_time)
     """
     assignments = skola.get_homework(pupil_value=pupil_value)
     if not assignments:
@@ -125,7 +127,7 @@ def sync_homework(
                 item.title,
                 item.due_date.isoformat() if item.due_date else "no date",
             )
-            _create_via_backend(backend, list_handle, item)
+            _create_via_backend(backend, list_handle, item, reminder_time)
             existing_uids.add(item.uid)
             created += 1
 
@@ -249,24 +251,13 @@ def _extract_ms_uid(title: str) -> Optional[str]:
     return f"SO-{m.group(1)}" if m else None
 
 
-def _create_via_backend(backend, list_handle, item: ReminderItem) -> None:
+def _create_via_backend(backend, list_handle, item: ReminderItem, reminder_time: Optional[str] = None) -> None:
     """Create a reminder via either backend."""
-    if hasattr(backend, "get_task_uids"):
-        # ICloudRemindersClient
-        backend.create_task(
-            list_handle,
-            uid=item.uid,
-            title=item.title,
-            description=item.description,
-            due_date=item.due_date,
-        )
-    else:
-        # MicrosoftToDoClient — embed UID in title
-        ms_title = f"[{item.uid}] {item.title}"
-        due = item.due_date.isoformat() if item.due_date else None
-        backend.create_task(
-            list_handle,
-            title=ms_title,
-            body=item.description,
-            due_date=due,
-        )
+    backend.create_task(
+        list_handle,
+        uid=item.uid,
+        title=item.title,
+        description=item.description,
+        due_date=item.due_date,
+        reminder_time=reminder_time,
+    )

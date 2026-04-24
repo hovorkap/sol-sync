@@ -1,4 +1,9 @@
-## 0.21.0
+## 0.22.0
+
+### Added
+- `reminder_time` config option (e.g. `"18:00"`): when set, the due date on each reminder becomes a datetime and a VALARM is added so the phone pops a notification at that time on the due date. Leave empty to keep date-only behaviour (no notification).
+
+
 
 ### Added
 - CHANGELOG.md — version history now visible in HA addon info panel

@@ -124,6 +124,7 @@ class ICloudRemindersClient:
         title: str,
         description: str,
         due_date: Optional[date] = None,
+        reminder_time: Optional[str] = None,
     ) -> None:
         """
         Create a VTODO (reminder) in the given calendar.
@@ -131,10 +132,14 @@ class ICloudRemindersClient:
         Uses a random UUID4 as the iCloud UID (stored in uid_map) to avoid
         iCloud's global UID conflict. If the PUT returns 412 (conflict), a
         fresh UUID4 is generated and the operation is retried once.
+
+        reminder_time: "HH:MM" string (e.g. "18:00"). When set, the DUE is
+        written as a floating datetime and a VALARM is added so the device
+        pops a notification at that time.
         """
         icloud_uid = self._get_or_create_icloud_uid(uid)
         try:
-            self._put_todo(calendar, icloud_uid, title, description, due_date)
+            self._put_todo(calendar, icloud_uid, title, description, due_date, reminder_time)
         except caldav.lib.error.PutError as e:
             if "412" in str(e):
                 log.warning(
@@ -144,7 +149,7 @@ class ICloudRemindersClient:
                 icloud_uid = str(uuid.uuid4())
                 self._uid_map[uid] = icloud_uid
                 self._save_uid_map()
-                self._put_todo(calendar, icloud_uid, title, description, due_date)
+                self._put_todo(calendar, icloud_uid, title, description, due_date, reminder_time)
             else:
                 raise
 
@@ -168,11 +173,29 @@ class ICloudRemindersClient:
         title: str,
         description: str,
         due_date: Optional[date],
+        reminder_time: Optional[str] = None,
     ) -> None:
         now = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         due_line = ""
+        alarm_block = ""
         if due_date:
-            due_line = f"DUE;VALUE=DATE:{due_date.strftime('%Y%m%d')}\r\n"
+            if reminder_time:
+                # Floating datetime DUE + VALARM so the device fires a notification
+                try:
+                    hh, mm = reminder_time.split(":")
+                    due_line = f"DUE:{due_date.strftime('%Y%m%d')}T{int(hh):02d}{int(mm):02d}00\r\n"
+                    alarm_block = (
+                        "BEGIN:VALARM\r\n"
+                        "ACTION:DISPLAY\r\n"
+                        "DESCRIPTION:Reminder\r\n"
+                        "TRIGGER;RELATED=END:PT0S\r\n"
+                        "END:VALARM\r\n"
+                    )
+                except (ValueError, AttributeError):
+                    log.warning("Invalid reminder_time %r, falling back to date-only DUE.", reminder_time)
+                    due_line = f"DUE;VALUE=DATE:{due_date.strftime('%Y%m%d')}\r\n"
+            else:
+                due_line = f"DUE;VALUE=DATE:{due_date.strftime('%Y%m%d')}\r\n"
 
         ical = (
             "BEGIN:VCALENDAR\r\n"
@@ -185,6 +208,7 @@ class ICloudRemindersClient:
             f"{_fold_ical_line(f'DESCRIPTION:{_escape_ical(description)}')}\r\n"
             f"{due_line}"
             "STATUS:NEEDS-ACTION\r\n"
+            f"{alarm_block}"
             "END:VTODO\r\n"
             "END:VCALENDAR\r\n"
         )

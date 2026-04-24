@@ -23,6 +23,9 @@ configuration:
   caldav_password:
     name: "CalDAV Password"
     description: "Password for your CalDAV server"
+  reminder_time:
+    name: "Reminder Time"
+    description: "Time to trigger a notification on due date, e.g. \"18:00\". Leave empty to disable time-based reminders (due date only)."
   sync_interval:
     name: "Sync Interval (minutes)"
     description: "How often to check SkolaOnline for new homework"

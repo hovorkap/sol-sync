@@ -1,6 +1,6 @@
 name: "SkolaOnline Sync"
 description: "Synchronizuje domácí úkoly ze SkolaOnline.cz do CalDAV kalendáře (iCloud nebo jiný server)"
-version: "0.21.0"
+version: "0.22.0"
 slug: "skolaonline_todo_sync"
 url: "https://github.com/hovorkap/sol-sync"
 init: false
@@ -20,6 +20,7 @@ options:
   caldav_password: ""
   sync_interval: 30
   default_list_name: "Homework"
+  reminder_time: "18:00"
   pupils:
     - sol_name: "Surname Firstname"
       strategy: "parse_du"
@@ -37,6 +38,7 @@ schema:
   caldav_password: "str?"
   sync_interval: int
   default_list_name: str
+  reminder_time: "str?"
   pupils:
     - sol_name: str
       strategy: list(single|parse_du)

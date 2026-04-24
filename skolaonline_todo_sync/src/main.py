@@ -97,6 +97,7 @@ def main():
     sol_password = options["skolaonline_password"]
     sync_interval = int(options.get("sync_interval", 30))
     default_list_name = options.get("default_list_name") or "Homework"
+    reminder_time = options.get("reminder_time") or None
     raw_pupils = options.get("pupils") or []
 
     # Build pupil config list — list_name falls back to default_list_name if not set per-pupil
@@ -171,6 +172,7 @@ def main():
                     pupil_value=pupil["pupil_value"],
                     name_prefix=pupil["name_prefix"],
                     include_past=pupil["include_past"],
+                    reminder_time=reminder_time,
                 )
             except Exception:
                 log.exception("Sync failed for pupil %r, will retry next interval.", pupil["sol_name"])

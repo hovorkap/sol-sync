@@ -80,12 +80,34 @@ class GenericCalDAVClient:
         title: str,
         description: str,
         due_date: Optional[date] = None,
+        reminder_time: Optional[str] = None,
     ) -> None:
-        """Create a VTODO in the given calendar using the logical UID directly."""
+        """Create a VTODO in the given calendar using the logical UID directly.
+
+        reminder_time: "HH:MM" string (e.g. "18:00"). When set, the DUE is
+        written as a floating datetime and a VALARM is added so the device
+        pops a notification at that time.
+        """
         now = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         due_line = ""
+        alarm_block = ""
         if due_date:
-            due_line = f"DUE;VALUE=DATE:{due_date.strftime('%Y%m%d')}\r\n"
+            if reminder_time:
+                try:
+                    hh, mm = reminder_time.split(":")
+                    due_line = f"DUE:{due_date.strftime('%Y%m%d')}T{int(hh):02d}{int(mm):02d}00\r\n"
+                    alarm_block = (
+                        "BEGIN:VALARM\r\n"
+                        "ACTION:DISPLAY\r\n"
+                        "DESCRIPTION:Reminder\r\n"
+                        "TRIGGER;RELATED=END:PT0S\r\n"
+                        "END:VALARM\r\n"
+                    )
+                except (ValueError, AttributeError):
+                    log.warning("Invalid reminder_time %r, falling back to date-only DUE.", reminder_time)
+                    due_line = f"DUE;VALUE=DATE:{due_date.strftime('%Y%m%d')}\r\n"
+            else:
+                due_line = f"DUE;VALUE=DATE:{due_date.strftime('%Y%m%d')}\r\n"
 
         ical = (
             "BEGIN:VCALENDAR\r\n"
@@ -98,6 +120,7 @@ class GenericCalDAVClient:
             f"{_fold_ical_line(f'DESCRIPTION:{_escape_ical(description)}')}\r\n"
             f"{due_line}"
             "STATUS:NEEDS-ACTION\r\n"
+            f"{alarm_block}"
             "END:VTODO\r\n"
             "END:VCALENDAR\r\n"
         )

@@ -23,6 +23,9 @@ configuration:
   caldav_password:
     name: "Heslo CalDAV"
     description: "Heslo pro přihlášení k CalDAV serveru"
+  reminder_time:
+    name: "Čas připomínky"
+    description: "Čas, kdy se zobrazí notifikace v den odevzdání, např. \"18:00\". Ponechte prázdné pro vypnutí (pouze datum bez času)."
   sync_interval:
     name: "Interval synchronizace (minuty)"
     description: "Jak často kontrolovat SkolaOnline pro nové úkoly"
