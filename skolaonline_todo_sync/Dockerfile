@@ -18,4 +18,4 @@ RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 
 COPY src/ .
 
-ENTRYPOINT ["python3", "/app/main.py"]
+ENTRYPOINT ["sh", "-c", "cd /app && exec python3 main.py"]
