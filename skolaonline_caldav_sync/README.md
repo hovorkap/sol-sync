@@ -12,6 +12,12 @@ Scrapes homework assignments from [SkolaOnline.cz](https://www.skolaonline.cz) (
 - Optional `name_prefix` per pupil (e.g. `[Maxim]`) when two pupils share one list
 - Works with iCloud Reminders or any CalDAV server
 
+## Preview
+
+![Homework synced to iPhone Reminders](docs/screenshot.png)
+
+*Homework assignments from SkolaOnline synced to the iPhone Reminders app — each item shows the full assignment text, due date, and a time-based notification reminder set for the evening before.*
+
 ## Installation
 
 1. In Home Assistant go to **Settings → Add-ons → Add-on Store**
