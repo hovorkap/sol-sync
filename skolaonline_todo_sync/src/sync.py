@@ -83,6 +83,8 @@ def sync_homework(
         log.info("No homework assignments found.")
         return
 
+    log.info("Found %d homework assignment(s) in total.", len(assignments))
+
     if not include_past:
         today = date.today()
         before = len(assignments)
@@ -117,6 +119,12 @@ def sync_homework(
         for item in items:
             if item.uid in existing_uids:
                 continue
+            log.info(
+                "Adding to '%s': %s (due: %s)",
+                list_name,
+                item.title,
+                item.due_date.isoformat() if item.due_date else "no date",
+            )
             _create_via_backend(backend, list_handle, item)
             existing_uids.add(item.uid)
             created += 1
