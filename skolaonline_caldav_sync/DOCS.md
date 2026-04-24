@@ -2,10 +2,6 @@
 
 Doplněk synchronizuje domácí úkoly ze [SkolaOnline.cz](https://www.skolaonline.cz) do CalDAV kalendáře (iCloud Připomínky nebo jiný CalDAV server).
 
-![Domácí úkoly v aplikaci Připomínky na iPhone](docs/screenshot.png)
-
-*Ukázka: domácí úkoly ze SkolaOnline synchronizované do aplikace Připomínky v iPhone — každá položka obsahuje text zadání, termín odevzdání a časovou připomínku nastavenou na večer před termínem.*
-
 ## Konfigurace
 
 ### SkolaOnline
@@ -60,3 +56,9 @@ Každý žák je samostatný záznam v seznamu:
 ## Poznámky k iCloud
 
 Po první synchronizaci se záznamy v iCloud zobrazují v aplikaci Připomínky. Pokud se nezobrazují okamžitě v iOS aplikaci, přidejte CalDAV účet ručně: **Nastavení → Připomínky → Účty → Přidat účet → Jiný → Přidat CalDAV účet** (server: `caldav.icloud.com`).
+
+## Ukázka
+
+![Domácí úkoly v aplikaci Připomínky na iPhone](docs/screenshot.png)
+
+*Domácí úkoly ze SkolaOnline synchronizované do aplikace Připomínky v iPhone — každá položka obsahuje text zadání, termín odevzdání a časovou připomínku nastavenou na večer před termínem.*

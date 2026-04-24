@@ -14,7 +14,7 @@ Scrapes homework assignments from [SkolaOnline.cz](https://www.skolaonline.cz) (
 
 ## Preview
 
-![Homework synced to iPhone Reminders](docs/screenshot.png)
+<img src="docs/screenshot.png" width="320" alt="Homework synced to iPhone Reminders" />
 
 *Homework assignments from SkolaOnline synced to the iPhone Reminders app — each item shows the full assignment text, due date, and a time-based notification reminder set for the evening before.*
 
