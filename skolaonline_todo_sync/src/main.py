@@ -19,11 +19,6 @@ import signal
 import sys
 import threading
 
-# Ensure the directory containing this file is on sys.path so sibling
-# modules (skolaonline, icloud_reminders, sync) are importable regardless
-# of working directory or PYTHONPATH configuration.
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
 from skolaonline import SkolaOnlineClient
 from icloud_reminders import ICloudRemindersClient
 from sync import sync_homework, STRATEGY_SINGLE
