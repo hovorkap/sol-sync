@@ -1,0 +1,35 @@
+name: "SkolaOnline ToDo Sync"
+description: "Synchronizes homework assignments from SkolaOnline.cz to iCloud Reminders"
+version: "0.3.0"
+slug: "skolaonline_todo_sync"
+url: "https://github.com/hovorkap/sol-api"
+init: false
+startup: services
+boot: auto
+arch:
+  - aarch64
+  - amd64
+options:
+  skolaonline_username: ""
+  skolaonline_password: ""
+  icloud_apple_id: ""
+  icloud_app_password: ""
+  sync_interval: 30
+  pupils:
+    - sol_name: "Surname Firstname"
+      strategy: "parse_du"
+      list_name: "Homework"
+      name_prefix: ""
+      include_past: false
+schema:
+  skolaonline_username: str
+  skolaonline_password: str
+  icloud_apple_id: str
+  icloud_app_password: str
+  sync_interval: int
+  pupils:
+    - sol_name: str
+      strategy: "single|parse_du"
+      list_name: str
+      name_prefix: str
+      include_past: bool
