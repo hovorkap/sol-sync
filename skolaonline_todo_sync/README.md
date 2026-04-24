@@ -14,7 +14,7 @@ Scrapes homework assignments from [SkolaOnline.cz](https://www.skolaonline.cz) (
 ## Installation
 
 1. In Home Assistant go to **Settings → Add-ons → Add-on Store**
-2. Click ⋮ → **Repositories** and add `https://github.com/hovorkap/sol-api`
+2. Click ⋮ → **Repositories** and add `https://github.com/hovorkap/sol-sync`
 3. Find and install **SkolaOnline ToDo Sync**
 4. Configure and start the add-on
 

@@ -6,7 +6,7 @@ This repository hosts the **SkolaOnline ToDo Sync** Home Assistant add-on.
 
 1. In Home Assistant go to **Settings → Add-ons → Add-on Store**
 2. Click ⋮ → **Repositories**
-3. Add: `https://github.com/hovorkap/sol-api`
+3. Add: `https://github.com/hovorkap/sol-sync`
 4. Find and install **SkolaOnline ToDo Sync**
 
 ## Add-ons
