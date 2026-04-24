@@ -1,6 +1,6 @@
 name: "SkolaOnline ToDo Sync"
 description: "Synchronizes homework assignments from SkolaOnline.cz to iCloud Reminders"
-version: "0.8.0"
+version: "0.9.0"
 slug: "skolaonline_todo_sync"
 url: "https://github.com/hovorkap/sol-sync"
 init: false
