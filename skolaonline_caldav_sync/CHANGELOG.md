@@ -1,3 +1,10 @@
+## 0.24.0
+
+### Changed
+- Screenshot added to documentation (shown at bottom of HA addon panel and in GitHub README)
+- Fixed `reminder_time` description — clarified that the notification fires the **evening before** the due date, not on the due date itself
+- README and DOCS updated with missing `reminder_time` option
+
 ## 0.23.0
 
 ### Changed
