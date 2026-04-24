@@ -1,15 +1,7 @@
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
-# Install Python and build dependencies for lxml/zeep
-RUN apk add --no-cache \
-    python3 \
-    py3-pip \
-    py3-lxml \
-    libxml2-dev \
-    libxslt-dev \
-    gcc \
-    musl-dev
+RUN apk add --no-cache gcc musl-dev libxml2-dev libxslt-dev
 
 WORKDIR /app
 
