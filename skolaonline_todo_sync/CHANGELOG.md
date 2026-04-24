@@ -1,4 +1,9 @@
-## 0.22.0
+## 0.22.1
+
+### Fixed
+- Reminder alarm now fires the **evening before** the due date (not on the due date itself). DUE remains set to the actual due date; the VALARM uses an absolute `TRIGGER;VALUE=DATE-TIME` set to `(due_date - 1 day)` at the configured time.
+
+
 
 ### Added
 - `reminder_time` config option (e.g. `"18:00"`): when set, the due date on each reminder becomes a datetime and a VALARM is added so the phone pops a notification at that time on the due date. Leave empty to keep date-only behaviour (no notification).

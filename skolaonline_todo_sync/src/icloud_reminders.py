@@ -25,7 +25,7 @@ import json
 import logging
 import os
 import uuid
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
 import caldav
@@ -179,23 +179,22 @@ class ICloudRemindersClient:
         due_line = ""
         alarm_block = ""
         if due_date:
+            due_line = f"DUE;VALUE=DATE:{due_date.strftime('%Y%m%d')}\r\n"
             if reminder_time:
-                # Floating datetime DUE + VALARM so the device fires a notification
                 try:
                     hh, mm = reminder_time.split(":")
-                    due_line = f"DUE:{due_date.strftime('%Y%m%d')}T{int(hh):02d}{int(mm):02d}00\r\n"
+                    # Fire the alarm the evening BEFORE the due date
+                    alarm_dt = due_date - timedelta(days=1)
+                    alarm_str = f"{alarm_dt.strftime('%Y%m%d')}T{int(hh):02d}{int(mm):02d}00"
                     alarm_block = (
                         "BEGIN:VALARM\r\n"
                         "ACTION:DISPLAY\r\n"
                         "DESCRIPTION:Reminder\r\n"
-                        "TRIGGER;RELATED=END:PT0S\r\n"
+                        f"TRIGGER;VALUE=DATE-TIME:{alarm_str}\r\n"
                         "END:VALARM\r\n"
                     )
                 except (ValueError, AttributeError):
-                    log.warning("Invalid reminder_time %r, falling back to date-only DUE.", reminder_time)
-                    due_line = f"DUE;VALUE=DATE:{due_date.strftime('%Y%m%d')}\r\n"
-            else:
-                due_line = f"DUE;VALUE=DATE:{due_date.strftime('%Y%m%d')}\r\n"
+                    log.warning("Invalid reminder_time %r, skipping alarm.", reminder_time)
 
         ical = (
             "BEGIN:VCALENDAR\r\n"
