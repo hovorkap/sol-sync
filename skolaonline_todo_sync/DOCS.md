@@ -48,9 +48,9 @@ Každý žák je samostatný záznam v seznamu:
 |---|---|
 | `sol_name` | Jméno žáka přesně podle rozbalovacího menu SkolaOnline (příjmení + jméno) |
 | `strategy` | `parse_du` – rozbalí skupinové úkoly na jednotlivé DÚ; `single` – jeden úkol za zadání |
-| `list_name` | Název seznamu pro tohoto žáka (pokud není uvedeno, použije se `default_list_name`) |
+| `list_name` | Název seznamu pro tohoto žáka (pokud není vyplněno, použije se `default_list_name`) |
 | `name_prefix` | Předpona v závorce před názvem úkolu, např. `Maxim` → `[Maxim] Matematika DÚ 1` |
-| `include_past` | Zahrnout i starší (splněné) úkoly |
+| `include_past` | `true` / `false` – zahrnout i starší (splněné) úkoly |
 
 ## Poznámky k iCloud
 
