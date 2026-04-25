@@ -1,4 +1,4 @@
-# Copilot Instructions – SkolaOnline Sync
+# Copilot Instructions – SkolaOnline CalDAV Sync
 
 ## Project overview
 
@@ -22,6 +22,8 @@ skolaonline_caldav_sync/
   translations/
     en.yaml                        # English config option labels for HA UI
     cs.yaml                        # Czech config option labels for HA UI
+  docs/
+    screenshot.png                 # App screenshot (referenced in README and DOCS)
   src/
     main.py                        # Reads /data/options.json, runs sync loop
     skolaonline.py                 # SkolaOnline HTTP/scraping client
@@ -55,10 +57,10 @@ skolaonline_caldav_sync/
 **Per-pupil config (`pupils` list in config.yaml):**
 ```yaml
 pupils:
-  - sol_name: "Hovorka Maxim"   # exact dropdown text (whitespace-normalized for matching)
-    strategy: "parse_du"        # "single" or "parse_du"
-    list_name: ""               # overrides default_list_name if non-empty
-    name_prefix: "Maxim"        # if non-empty, prefix all titles with "[Maxim] "
+  - sol_name: "Novak Jan"     # exact dropdown text (whitespace-normalized for matching)
+    strategy: "parse_du"      # "single" or "parse_du"
+    list_name: ""             # overrides default_list_name if non-empty
+    name_prefix: "Jan"        # if non-empty, prefix all titles with "[Jan] "
     include_past: false
 ```
 `name_prefix` is an explicit string (not derived). Use it when two pupils share the same `list_name` to distinguish their items.
@@ -66,6 +68,12 @@ pupils:
 **UID scoping:** UIDs include `osoba_id` (the pupil's person ID from col 4) to prevent collisions:
 - `single`: `SO-{osoba_id}-{ukol_id}`
 - `parse_du`: `SO-{osoba_id}-{ukol_id}-du-{sha1_hash}`
+
+**Reminder notifications (`reminder_time`):**
+- Optional config option (string `"HH:MM"`, e.g. `"18:00"`). Leave empty to disable.
+- When set, a `VALARM` is embedded in the VTODO with an absolute `TRIGGER;VALUE=DATE-TIME` set to `(due_date - 1 day)` at the configured time (floating/local time, no timezone suffix).
+- `DUE;VALUE=DATE:YYYYMMDD` always stays as the actual due date — the alarm fires the evening before.
+- Both `icloud_reminders.py` and `generic_caldav.py` implement this identically.
 
 **Polling loop:** `main.py` uses `threading.Event.wait(timeout=interval_seconds)` to sleep between syncs. A `SIGTERM` handler sets the event to trigger a clean shutdown.
 
@@ -82,7 +90,7 @@ pupils:
 - Persistent state goes in `/data/`. This directory survives addon restarts.
 - Log to stdout/stderr only. Use Python `logging` — never write to log files.
 - `run.sh` uses `#!/bin/sh` (not `with-contenv bashio`) and simply does `exec python3 /app/main.py`.
-- When adding new user-facing config options, update **all four** of: `options:` in `config.yaml`, `schema:` in `config.yaml`, `translations/en.yaml`, `translations/cs.yaml`.
+- When adding new user-facing config options, update **all four** of: `options:` in `config.yaml`, `schema:` in `config.yaml`, `translations/en.yaml`, `translations/cs.yaml`. Also update `DOCS.md` and `README.md`.
 - The HA addon `CHANGELOG.md` and `DOCS.md` are in the addon folder (`skolaonline_caldav_sync/`), not the repo root.
 
 ### Dockerfile constraints
