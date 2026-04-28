@@ -64,6 +64,10 @@ _COL_SUBJECT = 7
 _COL_DUE = 9
 _COL_STATUS = 10
 _COMPLETED_STATUS = "odevzdáno"
+# Modal popup shown when there are unread messages; this JS fragment is rendered
+# only when the server wants the modal to appear on page load.
+_UNREAD_MODAL_INDICATOR = "invokeViaServer('mpeSpustNeprecteneZpravyBehavior', true)"
+_UNREAD_MODAL_BTN = "ctl00$ctl15$NeprecteneZpravyOtazka$btnPozdeji"
 
 
 @dataclass
@@ -141,7 +145,9 @@ class SkolaOnlineClient:
             self.login()
         resp = self._session.get(HOMEWORK_URL + "?reset=true", timeout=30)
         resp.raise_for_status()
-        return _parse_pupils(BeautifulSoup(resp.text, "lxml"))
+        soup = BeautifulSoup(resp.text, "lxml")
+        soup = self._dismiss_unread_messages_modal(soup, resp.text)
+        return _parse_pupils(soup)
 
     def get_homework(self, pupil_value: Optional[str] = None) -> list[HomeworkAssignment]:
         """
@@ -202,6 +208,7 @@ class SkolaOnlineClient:
             raise RuntimeError("SkolaOnline session expired, please restart the addon.")
 
         soup = BeautifulSoup(resp.text, "lxml")
+        soup = self._dismiss_unread_messages_modal(soup, resp.text)
 
         if pupil_value is not None:
             soup = self._select_pupil(soup, pupil_value)
@@ -221,6 +228,44 @@ class SkolaOnlineClient:
 
         log.info("Found %d homework assignments across %d page(s).", len(all_assignments), total_pages)
         return all_assignments
+
+    def _dismiss_unread_messages_modal(self, soup: BeautifulSoup, page_text: str) -> BeautifulSoup:
+        """
+        Dismiss the 'unread messages' modal if the server has scheduled it to appear.
+
+        After login, SkolaOnline may show a modal ("Nepřečtené zprávy") prompting the
+        user to read unread messages. The server signals this via an invokeViaServer JS
+        call. We dismiss it by submitting the 'Ne, přečtu si je později' button, which
+        marks the modal as dismissed server-side so subsequent postbacks work normally.
+        """
+        if _UNREAD_MODAL_INDICATOR not in page_text:
+            return soup
+
+        btn = soup.find("button", {"name": _UNREAD_MODAL_BTN})
+        if btn is None:
+            log.warning("Unread messages modal indicator found but dismiss button missing; skipping dismissal.")
+            return soup
+
+        log.info("Unread messages modal detected; dismissing ('read later').")
+
+        def _hidden(name: str) -> str:
+            el = soup.find("input", {"name": name})
+            return el["value"] if el and el.get("value") else ""
+
+        postback_data = {
+            "__EVENTTARGET": "",
+            "__EVENTARGUMENT": "",
+            "__LASTFOCUS": "",
+            "__VIEWSTATE_SESSION_KEY": _hidden("__VIEWSTATE_SESSION_KEY"),
+            "__VIEWSTATE": "",
+            "__EVENTVALIDATION": _hidden("__EVENTVALIDATION"),
+            _UNREAD_MODAL_BTN: btn.get("value", "Ne, přečtu si je později"),
+            "ctl00xmainxwg": "",
+        }
+
+        resp = self._session.post(HOMEWORK_URL + "?reset=true", data=postback_data, timeout=30)
+        resp.raise_for_status()
+        return BeautifulSoup(resp.text, "lxml")
 
     def _select_pupil(self, soup: BeautifulSoup, pupil_value: str) -> BeautifulSoup:
         """Select a pupil via ASP.NET postback and return the reloaded page soup."""

@@ -1,3 +1,8 @@
+## 0.25.0
+
+### Fixed
+- Automatically dismiss the "unread messages" modal dialog (`Nepřečtené zprávy`) that SkolaOnline shows after login. The modal is now detected and silently dismissed via the "read later" button before scraping homework, so it no longer blocks data synchronization.
+
 ## 0.24.0
 
 ### Changed
