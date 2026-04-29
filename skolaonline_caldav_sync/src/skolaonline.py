@@ -263,7 +263,13 @@ class SkolaOnlineClient:
             "ctl00xmainxwg": "",
         }
 
-        resp = self._session.post(HOMEWORK_URL + "?reset=true", data=postback_data, timeout=30)
+        dismiss_resp = self._session.post(HOMEWORK_URL + "?reset=true", data=postback_data, timeout=30)
+        dismiss_resp.raise_for_status()
+        log.debug("Modal dismiss response URL: %s", dismiss_resp.url)
+
+        # Do a fresh GET so we always start from a known-clean page state,
+        # regardless of what the dismiss POST happened to return.
+        resp = self._session.get(HOMEWORK_URL + "?reset=true", timeout=30)
         resp.raise_for_status()
         return BeautifulSoup(resp.text, "lxml")
 

@@ -1,3 +1,8 @@
+## 0.25.1
+
+### Fixed
+- After dismissing the unread messages modal, do a fresh GET of the homework page before continuing. This ensures subsequent postbacks use a clean, valid page state regardless of what the dismiss POST returned.
+
 ## 0.25.0
 
 ### Fixed
