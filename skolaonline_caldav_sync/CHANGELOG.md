@@ -1,3 +1,8 @@
+## 0.27.0
+
+### Added
+- New `reminder_for_past` option (default `false`): when disabled, homework assignments whose due date is already in the past are synced without a notification alarm (VALARM), preventing a flood of spurious alerts when `include_past` is enabled. Set to `true` to restore the previous behaviour and receive alarms on historical items too.
+
 ## 0.26.0
 
 ### Fixed

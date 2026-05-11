@@ -26,6 +26,9 @@ configuration:
   reminder_time:
     name: "Reminder Time"
     description: "Time to trigger a notification the evening before the due date, e.g. \"18:00\". Leave empty to disable time-based reminders (due date only)."
+  reminder_for_past:
+    name: "Reminders for Past Homework"
+    description: "When disabled (default), no notification alarm is added to homework assignments whose due date is already in the past. Enable only if you want alarms on historical items."
   sync_interval:
     name: "Sync Interval (minutes)"
     description: "How often to check SkolaOnline for new homework"

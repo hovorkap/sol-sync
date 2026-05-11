@@ -60,6 +60,7 @@ Select `icloud` (default) or `caldav`.
 | `sync_interval` | `30` | Minutes between syncs |
 | `default_list_name` | `Homework` | Reminder list / calendar name (can be overridden per pupil) |
 | `reminder_time` | _(empty)_ | If set (e.g. `18:00`), adds a notification the **evening before** the due date at that time. Leave empty for due-date-only, no notification |
+| `reminder_for_past` | `false` | When `false`, no notification alarm is added to homework with a past due date (avoids alert floods when `include_past` is enabled) |
 
 ### Per-pupil options (`pupils` list)
 

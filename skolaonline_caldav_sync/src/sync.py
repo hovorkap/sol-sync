@@ -62,18 +62,22 @@ def sync_homework(
     name_prefix: str = "",
     include_past: bool = True,
     reminder_time: Optional[str] = None,
+    reminder_for_past: bool = False,
 ) -> None:
     """
     Fetch homework from SkolaOnline and create missing reminders via backend.
 
-    pupil_value:  dropdown option value from SkolaOnlineClient.get_pupils();
-                  if given, filters homework for that pupil only.
-    name_prefix:  if non-empty, prepend "[name_prefix] " to all reminder titles.
-                  Use when two pupils share the same reminder list.
-    include_past: if False, skip assignments whose due_date is before today.
-                  Assignments with no due_date are always included.
-    reminder_time: "HH:MM" string (e.g. "18:00"). When set, DUE is written as
-                  a floating datetime and a VALARM fires at that time.
+    pupil_value:      dropdown option value from SkolaOnlineClient.get_pupils();
+                      if given, filters homework for that pupil only.
+    name_prefix:      if non-empty, prepend "[name_prefix] " to all reminder titles.
+                      Use when two pupils share the same reminder list.
+    include_past:     if False, skip assignments whose due_date is before today.
+                      Assignments with no due_date are always included.
+    reminder_time:    "HH:MM" string (e.g. "18:00"). When set, a VALARM fires at
+                      that time the evening before the due date.
+    reminder_for_past: if False (default), the VALARM is suppressed for assignments
+                      whose due date is already in the past, preventing spurious
+                      notifications when syncing historical homework.
 
     backend must expose:
       - get_or_create_list(name) → list_handle
@@ -127,7 +131,15 @@ def sync_homework(
                 item.title,
                 item.due_date.isoformat() if item.due_date else "no date",
             )
-            _create_via_backend(backend, list_handle, item, reminder_time)
+            effective_reminder_time = reminder_time
+            if (
+                not reminder_for_past
+                and reminder_time is not None
+                and item.due_date is not None
+                and item.due_date < date.today()
+            ):
+                effective_reminder_time = None
+            _create_via_backend(backend, list_handle, item, effective_reminder_time)
             existing_uids.add(item.uid)
             created += 1
 

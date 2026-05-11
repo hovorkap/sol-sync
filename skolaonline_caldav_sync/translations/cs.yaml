@@ -26,6 +26,9 @@ configuration:
   reminder_time:
     name: "Čas připomínky"
     description: "Čas, kdy se zobrazí notifikace večer před termínem odevzdání, např. \"18:00\". Ponechte prázdné pro vypnutí (pouze datum bez času)."
+  reminder_for_past:
+    name: "Připomínky pro staré úkoly"
+    description: "Pokud je vypnuto (výchozí), úkolům s termínem odevzdání v minulosti se nepřidá časová notifikace. Zapněte pouze pokud chcete alarmy i u historických úkolů."
   sync_interval:
     name: "Interval synchronizace (minuty)"
     description: "Jak často kontrolovat SkolaOnline pro nové úkoly"

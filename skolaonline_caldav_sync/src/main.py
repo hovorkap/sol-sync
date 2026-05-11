@@ -98,6 +98,7 @@ def main():
     sync_interval = int(options.get("sync_interval", 30))
     default_list_name = options.get("default_list_name") or "Homework"
     reminder_time = options.get("reminder_time") or None
+    reminder_for_past = bool(options.get("reminder_for_past", False))
     raw_pupils = options.get("pupils") or []
 
     # Build pupil config list — list_name falls back to default_list_name if not set per-pupil
@@ -173,6 +174,7 @@ def main():
                     name_prefix=pupil["name_prefix"],
                     include_past=pupil["include_past"],
                     reminder_time=reminder_time,
+                    reminder_for_past=reminder_for_past,
                 )
             except Exception:
                 log.exception("Sync failed for pupil %r, will retry next interval.", pupil["sol_name"])

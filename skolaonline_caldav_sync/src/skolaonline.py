@@ -99,6 +99,12 @@ class HomeworkAssignment:
 
 _SESSION_PATH = "/data/skolaonline_session.json"
 
+# ASP.NET_SessionId expires in ~20 minutes (server default), which is shorter
+# than the typical sync interval. Restoring a stale session ID causes the
+# homework page to render without content even though auth cookies are still
+# valid. Skipping it lets the server issue a fresh session ID automatically.
+_SKIP_COOKIES = {"ASP.NET_SessionId"}
+
 
 class SkolaOnlineClient:
     """Authenticated HTTP session client for SkolaOnline."""
@@ -116,11 +122,12 @@ class SkolaOnlineClient:
         self._load_session()
 
     def _save_session(self) -> None:
-        """Persist session cookies to disk so restarts don't trigger a new login."""
+        """Persist auth cookies to disk so restarts don't trigger a new login."""
         try:
             cookies = [
                 {"name": c.name, "value": c.value, "domain": c.domain, "path": c.path}
                 for c in self._session.cookies
+                if c.name not in _SKIP_COOKIES
             ]
             with open(self._session_path, "w") as f:
                 json.dump(cookies, f)
@@ -129,14 +136,15 @@ class SkolaOnlineClient:
             log.warning("Could not save session cookies to %s.", self._session_path, exc_info=True)
 
     def _load_session(self) -> None:
-        """Restore session cookies from disk if available."""
+        """Restore auth cookies from disk if available."""
         if not os.path.exists(self._session_path):
             return
         try:
             with open(self._session_path) as f:
                 cookies = json.load(f)
             for c in cookies:
-                self._session.cookies.set(c["name"], c["value"], domain=c["domain"], path=c["path"])
+                if c["name"] not in _SKIP_COOKIES:
+                    self._session.cookies.set(c["name"], c["value"], domain=c["domain"], path=c["path"])
             self._logged_in = True
             log.info("Restored session from %s (will verify on first request).", self._session_path)
         except Exception:
@@ -187,6 +195,14 @@ class SkolaOnlineClient:
             self.login()
         resp = self._session.get(HOMEWORK_URL + "?reset=true", timeout=30)
         resp.raise_for_status()
+
+        if "Prihlaseni" in resp.url:
+            log.info("SkolaOnline session expired while fetching pupils; re-logging in...")
+            self._logged_in = False
+            self.login()
+            resp = self._session.get(HOMEWORK_URL + "?reset=true", timeout=30)
+            resp.raise_for_status()
+
         soup = BeautifulSoup(resp.text, "lxml")
         soup = self._dismiss_unread_messages_modal(soup)
         return _parse_pupils(soup)
