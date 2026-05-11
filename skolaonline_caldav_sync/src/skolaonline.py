@@ -48,6 +48,7 @@ Pupil selection:
 import json
 import logging
 import os
+import re
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Optional
@@ -73,10 +74,10 @@ _COL_SUBJECT = 7
 _COL_DUE = 9
 _COL_STATUS = 10
 _COMPLETED_STATUS = "odevzdáno"
-# Button name for the "read later" action in the unread-messages modal.
-# Detected by DOM presence — not by a JS indicator string — so it works even
-# when the server-side JS changes.
-_UNREAD_MODAL_BTN = "ctl00$ctl15$NeprecteneZpravyOtazka$btnPozdeji"
+# Regex matching the "read later" dismiss button in the unread-messages modal.
+# The full name is "ctl00$ctl15$NeprecteneZpravyOtazka$btnPozdeji" but the
+# numeric segment ($ctl15$) can vary, so we match only the stable parts.
+_UNREAD_MODAL_BTN_RE = re.compile(r"NeprecteneZpravyOtazka.*btnPozdeji")
 
 
 @dataclass
@@ -205,7 +206,22 @@ class SkolaOnlineClient:
 
         soup = BeautifulSoup(resp.text, "lxml")
         soup = self._dismiss_unread_messages_modal(soup)
-        return _parse_pupils(soup)
+        pupils = _parse_pupils(soup)
+
+        if not pupils and self._logged_in:
+            # No redirect to login but dropdown is empty — auth cookie may have
+            # expired without a clean redirect, or the page is in a bad state.
+            # Force a fresh login to recover.
+            log.info("Pupil dropdown empty on valid page; forcing re-login to recover.")
+            self._logged_in = False
+            self.login()
+            resp = self._session.get(HOMEWORK_URL + "?reset=true", timeout=30)
+            resp.raise_for_status()
+            soup = BeautifulSoup(resp.text, "lxml")
+            soup = self._dismiss_unread_messages_modal(soup)
+            pupils = _parse_pupils(soup)
+
+        return pupils
 
     def get_homework(self, pupil_value: Optional[str] = None) -> list[HomeworkAssignment]:
         """
@@ -279,6 +295,8 @@ class SkolaOnlineClient:
             soup = self._dismiss_unread_messages_modal(soup)
 
         soup = self._postback_show_all(soup)
+        # Modal can appear after any postback; check once more before parsing.
+        soup = self._dismiss_unread_messages_modal(soup)
 
         # Determine total page count from the pager
         total_pages = self._get_page_count(soup)
@@ -305,11 +323,12 @@ class SkolaOnlineClient:
         We dismiss it by submitting the 'Ne, přečtu si je později' button, which marks
         the modal as dismissed server-side so subsequent postbacks work normally.
         """
-        btn = soup.find("button", {"name": _UNREAD_MODAL_BTN})
+        btn = soup.find("button", {"name": _UNREAD_MODAL_BTN_RE})
         if btn is None:
             return soup
 
-        log.info("Unread messages modal detected; dismissing ('read later').")
+        btn_name = btn.get("name", "")
+        log.info("Unread messages modal detected (button: %s); dismissing ('read later').", btn_name)
 
         def _hidden(name: str) -> str:
             el = soup.find("input", {"name": name})
@@ -322,7 +341,7 @@ class SkolaOnlineClient:
             "__VIEWSTATE_SESSION_KEY": _hidden("__VIEWSTATE_SESSION_KEY"),
             "__VIEWSTATE": "",
             "__EVENTVALIDATION": _hidden("__EVENTVALIDATION"),
-            _UNREAD_MODAL_BTN: btn.get("value", "Ne, přečtu si je později"),
+            btn_name: btn.get("value", "Ne, přečtu si je později"),
             "ctl00xmainxwg": "",
         }
 

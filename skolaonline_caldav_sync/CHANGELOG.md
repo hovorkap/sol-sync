@@ -1,3 +1,10 @@
+## 0.27.1
+
+### Fixed
+- Modal button detection now uses a regex instead of an exact name match, so it keeps working if the ASP.NET control index in the button name changes (e.g. `$ctl15$` → `$ctl16$`). The actual button name is also logged for easier future diagnosis.
+- The unread-messages modal is now checked and dismissed after `_postback_show_all` as well, covering the case where it appears mid-sync (after a pupil-selection postback or the "show completed" postback).
+- `get_pupils()` now forces a fresh login when the pupil dropdown is empty on a page that did not redirect to login — this recovers from expired auth cookies that fail silently without a login redirect.
+
 ## 0.27.0
 
 ### Added
