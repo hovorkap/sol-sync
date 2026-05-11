@@ -57,6 +57,10 @@ Každý žák je samostatný záznam v seznamu:
 
 Po první synchronizaci se záznamy v iCloud zobrazují v aplikaci Připomínky. Pokud se nezobrazují okamžitě v iOS aplikaci, přidejte CalDAV účet ručně: **Nastavení → Připomínky → Účty → Přidat účet → Jiný → Přidat CalDAV účet** (server: `caldav.icloud.com`).
 
+## Poznámky k přihlášení
+
+Přihlašovací session je uložena do `/data/skolaonline_session.json` a obnovena při každém spuštění. Nové přihlášení proběhne pouze při prvním spuštění nebo po expiraci session na straně serveru — **doplněk se nepřihlašuje znovu po každém restartu**.
+
 ## Ukázka
 
 ![Domácí úkoly v aplikaci Připomínky na iPhone](docs/screenshot.png)

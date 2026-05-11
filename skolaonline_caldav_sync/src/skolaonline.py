@@ -9,6 +9,13 @@ Authentication:
   - On success the server issues session cookies and redirects into the app.
   - On failure the response URL still contains "Prihlaseni".
 
+Session persistence:
+  - After a successful login the session cookies are saved to session_path
+    (default: /data/skolaonline_session.json) so the client can restore them
+    on the next startup without triggering a new login.
+  - If the saved session is expired the client re-logs in transparently and
+    saves the fresh cookies so subsequent runs reuse them.
+
 App base URL: https://aplikace.skolaonline.cz/SOL/App/
 Known pages:
   - Prihlaseni.aspx                     – login
@@ -38,7 +45,9 @@ Pupil selection:
   Selecting a pupil triggers an ASP.NET postback that reloads the list
   filtered for that pupil. Always do a fresh GET before each pupil's sync.
 """
+import json
 import logging
+import os
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Optional
@@ -64,9 +73,9 @@ _COL_SUBJECT = 7
 _COL_DUE = 9
 _COL_STATUS = 10
 _COMPLETED_STATUS = "odevzdáno"
-# Modal popup shown when there are unread messages; this JS fragment is rendered
-# only when the server wants the modal to appear on page load.
-_UNREAD_MODAL_INDICATOR = "invokeViaServer('mpeSpustNeprecteneZpravyBehavior', true)"
+# Button name for the "read later" action in the unread-messages modal.
+# Detected by DOM presence — not by a JS indicator string — so it works even
+# when the server-side JS changes.
 _UNREAD_MODAL_BTN = "ctl00$ctl15$NeprecteneZpravyOtazka$btnPozdeji"
 
 
@@ -88,18 +97,50 @@ class HomeworkAssignment:
     is_completed: bool
 
 
+_SESSION_PATH = "/data/skolaonline_session.json"
+
+
 class SkolaOnlineClient:
     """Authenticated HTTP session client for SkolaOnline."""
 
-    def __init__(self, username: str, password: str):
+    def __init__(self, username: str, password: str, session_path: str = _SESSION_PATH):
         self._username = username
         self._password = password
+        self._session_path = session_path
         self._session = requests.Session()
         self._session.headers.update({
             "User-Agent": "Mozilla/5.0 (compatible; SkolaOnlineToDoSync/0.1)",
             "Referer": "https://www.skolaonline.cz/prihlaseni/",
         })
         self._logged_in = False
+        self._load_session()
+
+    def _save_session(self) -> None:
+        """Persist session cookies to disk so restarts don't trigger a new login."""
+        try:
+            cookies = [
+                {"name": c.name, "value": c.value, "domain": c.domain, "path": c.path}
+                for c in self._session.cookies
+            ]
+            with open(self._session_path, "w") as f:
+                json.dump(cookies, f)
+            log.debug("Session cookies saved to %s.", self._session_path)
+        except Exception:
+            log.warning("Could not save session cookies to %s.", self._session_path, exc_info=True)
+
+    def _load_session(self) -> None:
+        """Restore session cookies from disk if available."""
+        if not os.path.exists(self._session_path):
+            return
+        try:
+            with open(self._session_path) as f:
+                cookies = json.load(f)
+            for c in cookies:
+                self._session.cookies.set(c["name"], c["value"], domain=c["domain"], path=c["path"])
+            self._logged_in = True
+            log.info("Restored session from %s (will verify on first request).", self._session_path)
+        except Exception:
+            log.warning("Could not restore session from %s; will log in fresh.", self._session_path, exc_info=True)
 
     def login(self) -> None:
         """
@@ -131,6 +172,7 @@ class SkolaOnlineClient:
             )
 
         self._logged_in = True
+        self._save_session()
         log.info("Logged in to SkolaOnline. Session landing URL: %s", response.url)
 
     def get_pupils(self) -> list[Pupil]:
@@ -146,7 +188,7 @@ class SkolaOnlineClient:
         resp = self._session.get(HOMEWORK_URL + "?reset=true", timeout=30)
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "lxml")
-        soup = self._dismiss_unread_messages_modal(soup, resp.text)
+        soup = self._dismiss_unread_messages_modal(soup)
         return _parse_pupils(soup)
 
     def get_homework(self, pupil_value: Optional[str] = None) -> list[HomeworkAssignment]:
@@ -204,14 +246,21 @@ class SkolaOnlineClient:
         resp.raise_for_status()
 
         if "Prihlaseni" in resp.url:
+            log.info("SkolaOnline session expired; re-logging in...")
             self._logged_in = False
-            raise RuntimeError("SkolaOnline session expired, please restart the addon.")
+            self.login()
+            resp = self._session.get(HOMEWORK_URL + "?reset=true", timeout=30)
+            resp.raise_for_status()
+            if "Prihlaseni" in resp.url:
+                raise RuntimeError("SkolaOnline session expired and re-login failed.")
 
         soup = BeautifulSoup(resp.text, "lxml")
-        soup = self._dismiss_unread_messages_modal(soup, resp.text)
+        soup = self._dismiss_unread_messages_modal(soup)
 
         if pupil_value is not None:
             soup = self._select_pupil(soup, pupil_value)
+            # Modal may reappear after the pupil-selection postback.
+            soup = self._dismiss_unread_messages_modal(soup)
 
         soup = self._postback_show_all(soup)
 
@@ -229,21 +278,19 @@ class SkolaOnlineClient:
         log.info("Found %d homework assignments across %d page(s).", len(all_assignments), total_pages)
         return all_assignments
 
-    def _dismiss_unread_messages_modal(self, soup: BeautifulSoup, page_text: str) -> BeautifulSoup:
+    def _dismiss_unread_messages_modal(self, soup: BeautifulSoup) -> BeautifulSoup:
         """
-        Dismiss the 'unread messages' modal if the server has scheduled it to appear.
+        Dismiss the 'unread messages' modal if it is present on the page.
 
-        After login, SkolaOnline may show a modal ("Nepřečtené zprávy") prompting the
-        user to read unread messages. The server signals this via an invokeViaServer JS
-        call. We dismiss it by submitting the 'Ne, přečtu si je později' button, which
-        marks the modal as dismissed server-side so subsequent postbacks work normally.
+        After login (or after a pupil-selection postback), SkolaOnline may show a
+        modal ("Nepřečtené zprávy") prompting the user to read unread messages.
+        Detection is based on the presence of the dismiss button in the DOM — not on
+        any JS indicator string — so it stays robust even when the server-side JS changes.
+        We dismiss it by submitting the 'Ne, přečtu si je později' button, which marks
+        the modal as dismissed server-side so subsequent postbacks work normally.
         """
-        if _UNREAD_MODAL_INDICATOR not in page_text:
-            return soup
-
         btn = soup.find("button", {"name": _UNREAD_MODAL_BTN})
         if btn is None:
-            log.warning("Unread messages modal indicator found but dismiss button missing; skipping dismissal.")
             return soup
 
         log.info("Unread messages modal detected; dismissing ('read later').")

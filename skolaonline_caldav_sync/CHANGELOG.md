@@ -1,3 +1,10 @@
+## 0.26.0
+
+### Fixed
+- Session cookies are now persisted to `/data/skolaonline_session.json` so the add-on no longer triggers a new SkolaOnline login on every restart — logins only happen when the session genuinely expires server-side.
+- When the session does expire during a sync, the add-on re-logs in automatically and continues without failing.
+- Unread-messages modal detection is now based on the dismiss button's presence in the DOM instead of a JS indicator string, making it robust against server-side JS changes.
+
 ## 0.25.1
 
 ### Fixed

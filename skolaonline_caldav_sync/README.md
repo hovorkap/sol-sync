@@ -4,7 +4,7 @@ Scrapes homework assignments from [SkolaOnline.cz](https://www.skolaonline.cz) (
 
 ## Features
 
-- Authenticates to SkolaOnline as a parent
+- Authenticates to SkolaOnline as a parent — session is persisted across restarts so logins happen only when the session genuinely expires
 - Supports multiple pupils — each can have its own reminder list and sync strategy
 - Two sync strategies: `single` (one item per assignment) or `parse_du` (parses individual DÚ lines from the assignment description)
 - Deduplicates — existing reminders are never re-created
