@@ -254,6 +254,17 @@ class SkolaOnlineClient:
         )
         resp.raise_for_status()
 
+        if "Prihlaseni" in resp.url:
+            log.info("SkolaOnline session expired while fetching description; re-logging in...")
+            self._logged_in = False
+            self.login()
+            resp = self._session.get(
+                HOMEWORK_DETAIL_URL,
+                params={"UkolID": ukol_id},
+                timeout=30,
+            )
+            resp.raise_for_status()
+
         soup = BeautifulSoup(resp.text, "lxml")
         # The detail page has a 2-cell table row: <td>Podrobné zadání:</td><td>{content}</td>
         # Match only the label row (not an outer row that incidentally contains the text).
@@ -288,6 +299,26 @@ class SkolaOnlineClient:
 
         soup = BeautifulSoup(resp.text, "lxml")
         soup = self._dismiss_unread_messages_modal(soup)
+
+        # Detect silent session expiry: server returned a non-homework page
+        # (e.g. dashboard) without a redirect to Prihlaseni.
+        if not _is_homework_page(soup):
+            log.warning(
+                "Homework page did not render correctly (missing form elements); "
+                "session may have expired silently. Forcing re-login..."
+            )
+            self._logged_in = False
+            self.login()
+            resp = self._session.get(HOMEWORK_URL + "?reset=true", timeout=30)
+            resp.raise_for_status()
+            if "Prihlaseni" in resp.url:
+                raise RuntimeError("SkolaOnline session expired and re-login failed.")
+            soup = BeautifulSoup(resp.text, "lxml")
+            soup = self._dismiss_unread_messages_modal(soup)
+            if not _is_homework_page(soup):
+                raise RuntimeError(
+                    "Homework page failed to render correctly even after re-login."
+                )
 
         if pupil_value is not None:
             soup = self._select_pupil(soup, pupil_value)
@@ -478,6 +509,19 @@ class SkolaOnlineClient:
 
         log.info("Found %d homework assignments.", len(assignments))
         return assignments
+
+
+def _is_homework_page(soup: BeautifulSoup) -> bool:
+    """
+    Return True if the soup is actually the homework list page.
+
+    The show-completed checkbox is only present on KUK005_UkolyStudenta and
+    is a reliable indicator that the page rendered with full content.
+    A missing checkbox means the server returned a dashboard, error, or partial
+    page — typically caused by a silently-expired session that did not redirect
+    to Prihlaseni.
+    """
+    return soup.find("input", {"name": "ctl00$main$cbZobrazitSplneneOdevzdane"}) is not None
 
 
 def _looks_like_guid(value: str) -> bool:

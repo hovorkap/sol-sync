@@ -1,3 +1,9 @@
+## 0.27.2
+
+### Fixed
+- Detect silent session expiry in `_scrape_homework`: when SkolaOnline returns a non-homework page (e.g. a dashboard) without redirecting to the login URL, the add-on now recognises the missing form elements, forces a re-login, and retries the scrape. Previously the sync would silently return zero assignments and never recover until a restart.
+- Detect session expiry in `get_assignment_description`: if the detail page redirects to login, the add-on now re-logs in automatically before retrying the description fetch.
+
 ## 0.27.1
 
 ### Fixed
